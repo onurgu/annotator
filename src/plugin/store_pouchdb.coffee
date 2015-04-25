@@ -15,7 +15,7 @@
 #   })
 #
 # This header will now be sent with every request.
-class Annotator.Plugin.Store extends Annotator.Plugin
+class Annotator.Plugin.StorePouchDB extends Annotator.Plugin
   # The store listens for the following events published by the Annotator.
   # - annotationCreated: A new annotation has been created.
   # - annotationUpdated: An annotation has been updated.
@@ -91,6 +91,11 @@ class Annotator.Plugin.Store extends Annotator.Plugin
     @annotations = []
     @db = new PouchDB('annotations');
 
+    PouchDB.replicate('annotations', 'https://twitterannotator.cloudant.com/annotations', {
+      live: true,
+      retry: true
+    })
+
   # Public: Initialises the plugin and loads the latest annotations. If the
   # Auth plugin is also present it will request an auth token before loading
   # any annotations.
@@ -136,7 +141,9 @@ class Annotator.Plugin.Store extends Annotator.Plugin
     if annotation not in @annotations
       this.registerAnnotation(annotation)
 
-      @db.post(annotation).then( (response) =>
+      console.log(annotation)
+
+      @db.post(JSON.parse(this._dataFor(annotation))).then( (response) =>
         if not response.id?
           console.warn Annotator._t("Warning: No ID returned from server for annotation "), annotation
         this.updateAnnotation annotation, response
@@ -172,7 +179,7 @@ class Annotator.Plugin.Store extends Annotator.Plugin
       @db.get(annotation.id).then( (doc) =>
         return @db.put(annotation, annotation.id, doc._rev);
       ).then( (response) =>
-        this.updateAnnotation(annotation, data)
+        this.updateAnnotation(annotation, response)
       )
 
   # Public: Callback method for annotationDeleted event. Receives an annotation
@@ -266,7 +273,11 @@ class Annotator.Plugin.Store extends Annotator.Plugin
 
     @db.allDocs({include_docs: true, descending: true}, (err, doc) =>
         console.log(doc.rows)
-        this._onLoadAnnotations(doc.rows)
+        docs = []
+        for row in doc.rows
+          row.doc.id = row.doc._id
+          docs.push(row.doc)
+        this._onLoadAnnotations(docs)
     )
 
   # Callback method for Store#loadAnnotations(). Processes the data
