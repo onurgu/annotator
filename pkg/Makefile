@@ -25,6 +25,7 @@ PLUGINS=\
 	plugin/permissions.coffee \
 	plugin/store.coffee \
 	plugin/tags.coffee \
+	plugin/objects.coffee \
 	plugin/unsupported.coffee
 
 ANNOTATOR_FULL=\
@@ -37,6 +38,8 @@ ANNOTATOR_FULL=\
 	plugin/filter.coffee \
 	plugin/markdown.coffee \
 	plugin/tags.coffee \
+	plugin/objects.coffee \
+	plugin/store_pouchdb.coffee \
 	plugin/kitchensink.coffee
 
 BOOKMARKLET=\
