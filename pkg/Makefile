@@ -24,6 +24,7 @@ PLUGINS=\
 	plugin/markdown.coffee \
 	plugin/permissions.coffee \
 	plugin/store.coffee \
+	plugin/store_pouchdb.coffee \
 	plugin/tags.coffee \
 	plugin/objects.coffee \
 	plugin/unsupported.coffee
