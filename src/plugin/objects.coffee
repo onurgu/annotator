@@ -44,6 +44,8 @@ class Annotator.Plugin.Objects extends Annotator.Plugin
     self = this
     updateField = (objectType) ->
       (field, annotation) -> self.updateField(field, annotation, objectType)
+    updateViewer = (objectType) ->
+      (field, annotation) -> self.updateViewer(field, annotation, objectType)
     setAnnotationTags = (objectType) ->
       (field, annotation) -> self.setAnnotationTags(field, annotation, objectType)
 
@@ -73,7 +75,15 @@ class Annotator.Plugin.Objects extends Annotator.Plugin
 #      })
 
     @annotator.viewer.addField({
-      load: this.updateViewer
+      load: updateViewer("person")
+    })
+
+    @annotator.viewer.addField({
+      load: updateViewer("location")
+    })
+
+    @annotator.viewer.addField({
+      load: updateViewer("action")
     })
 
     # Add a filter to the Filter plugin if loaded.
@@ -191,25 +201,21 @@ class Annotator.Plugin.Objects extends Annotator.Plugin
   #   field.innerHTML # => Returns '<span class="annotator-tag">apples</span>'
   #
   # Returns nothing.
-  updateViewer: (field, annotation) ->
+  updateViewer: (field, annotation, objectType) ->
     field = $(field)
 
-    if annotation.personTags and $.isArray(annotation.personTags) and annotation.personTags.length
-      console.log(annotation.personTags)
-      field.addClass('annotator-tags').html(->
-        string = "PERSON: " + $.map(annotation.personTags,(tag) ->
-            '<span class="annotator-tag">' + Annotator.Util.escape(tag) + '</span>'
-        ).join(' ')
-      )
-    else if annotation.locationTags and $.isArray(annotation.locationTags) and annotation.locationTags.length
-      field.addClass('annotator-tags').html(->
-        string = "LOCATION: " + $.map(annotation.locationTags,(tag) ->
-            '<span class="annotator-tag">' + Annotator.Util.escape(tag) + '</span>'
-        ).join(' ')
-      )
-    else if annotation.actionTags and $.isArray(annotation.actionTags) and annotation.actionTags.length
-      field.addClass('annotator-tags').html(->
-        string = "ACTION: " + $.map(annotation.actionTags,(tag) ->
+    choices = [["person", annotation.personTags],
+               ["location", annotation.locationTags],
+               ["action", annotation.actionTags]]
+
+    for choice in choices
+      if choice[0] == objectType
+        tagsArray = choice[1]
+
+    if tagsArray and $.isArray(tagsArray) and tagsArray.length
+      console.log(tagsArray)
+      field.addClass('annotator-tags object-' + objectType).html(->
+        string = objectType.toUpperCase() + ": " + $.map(tagsArray,(tag) ->
             '<span class="annotator-tag">' + Annotator.Util.escape(tag) + '</span>'
         ).join(' ')
       )
